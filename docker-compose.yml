@@ -1,0 +1,25 @@
+services:
+  postgres:
+    image: postgres:13  # PostgreSQL version 13 image from Docker Hub
+    environment:
+      POSTGRES_USER: postgres         # Set the PostgreSQL username
+      POSTGRES_PASSWORD: admin123  # Set the PostgreSQL password
+      POSTGRES_DB: weather_data       # Create a default database
+    ports:
+      - "5432:5432"                   # Expose port 5432 for PostgreSQL
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Persistent volume for data
+
+  airflow:
+    image: apache/airflow:2.3.0       # Airflow image from Docker Hub
+    environment:
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:admin123@postgres/weather_data
+    volumes:
+      - ./dags:/opt/airflow/dags      # Mount local "dags" folder to Airflow "dags" folder
+    ports:
+      - "8080:8080"                   # Expose port 8080 for Airflow UI
+    depends_on:
+      - postgres                      # Start PostgreSQL before Airflow
+
+volumes:
+  pgdata:                             # Define a volume for PostgreSQL persistent storage
